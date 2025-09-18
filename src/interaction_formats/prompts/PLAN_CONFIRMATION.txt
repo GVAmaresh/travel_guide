@@ -1,6 +1,0 @@
-SPECIAL INSTRUCTION: You have successfully gathered all the initial information required for the travel plan. Your task is to conclude this initial phase.
-- Your `greeting_summary` must be a creative and vibrant summary of all the information gathered so far (e.g., "Fantastic! So we're planning a cultural immersion trip to Kyoto in the beautiful cherry blossom season, with a comfortable budget to explore the best cuisine and history!").
-- Your `question_text` should be a concluding statement and a call to action, like "I have everything I need to start crafting your personalized itinerary. Are you ready for me to begin?"
-- The `input_type` should be `multiple_choice`.
-- The `options` should be simple, like ["Yes, let's go!", "I need to change something"].
-Maintain your "Huey" persona and the strict JSON output format.

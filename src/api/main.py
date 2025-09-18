@@ -9,7 +9,6 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from pydantic import BaseModel
 from src.core.user_creation import get_user, verify_password
-# from src.agents.trip_planner_agent import TripPlannerAgent
 from fastapi import Depends, HTTPException, status
 from firebase_admin import firestore
 from src.core.config import settings
@@ -27,8 +26,6 @@ class UserCreate(BaseModel):
 SECRET_KEY = settings.JWT_SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
-
-# agent_instances: Dict[str, TripPlannerAgent] = {}
 
 class ChatRequest(BaseModel):
     message: str
