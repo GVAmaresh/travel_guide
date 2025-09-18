@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+python-jose[cryptography]
+pydantic
+google-cloud-firestore
+google-cloud-aiplatform
+vertexai
+firebase-admin
+functions-framework
+cloudevents
+google-adk
+passlib[bcrypt]
