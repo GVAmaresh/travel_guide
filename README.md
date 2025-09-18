@@ -103,7 +103,7 @@ Once the setup is complete, you can run the FastAPI web server.
     * `app`: The `app = FastAPI()` object inside that file.
     * `--reload`: Enables auto-reload for development, so the server restarts when you save code changes.
 
-3.  **Access the API:** The server will be running on `http://127.0.0.1:8000`. You can access the interactive API documentation (Swagger UI) at **`http://127.0.0.1:8000/docs`**.
+2.  **Access the API:** The server will be running on `http://127.0.0.1:8000`. You can access the interactive API documentation (Swagger UI) at **`http://127.0.0.1:8000/docs`**.
 
 ---
 
@@ -130,16 +130,10 @@ gcloud functions deploy update_vector_memory \
 
 
 
-Here’s a **simplified README.md** version of your API guide for Postman setup
 
 ---
 
 ## Postman Setup
-
-This guide shows the step-by-step flow for using the API. We'll use two Postman variables to pass data between requests:
-
-  * `{{JWT}}`: Stores your authentication token.
-  * `{{session_id}}`: Stores your current trip planning session ID.
 
 ## Part 1: Authentication
 
