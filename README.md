@@ -93,13 +93,7 @@ gcloud auth application-default login
 
 Once the setup is complete, you can run the FastAPI web server.
 
-1.  **Navigate to the `src` directory:** The `uvicorn` command should be run from the directory that contains the `travelhues` package.
-
-    ```bash
-    cd src
-    ```
-
-2.  **Start the Server:**
+1. **Start the Server:**
 
     ```bash
     uvicorn src.api.main:app --reload
