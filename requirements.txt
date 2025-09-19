@@ -10,3 +10,4 @@ functions-framework
 cloudevents
 google-adk
 passlib[bcrypt]
+python-multipart

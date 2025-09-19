@@ -14,25 +14,12 @@ from firebase_admin import firestore
 from src.core.config import settings
 from src.core.user_creation import create_user as create_new_user
 from src.core.session_manager import create_session, get_session, update_session
-from src.agents.logic import run_root_agent, run_summary_agent, generate_final_prompt
-from .models import PlanTripRequest, GenerateSummaryRequest, UpdateSummaryRequest
-
-class UserCreate(BaseModel):
-    username: str
-    password: str
-    
-
+from src.agents.logic import run_root_agent, run_summary_agent, generate_final_prompt, run_flexible_date_agent, run_flight_search_agent 
+from .models import PlanTripRequest, GenerateSummaryRequest, UpdateSummaryRequest, ConfirmFlightsRequest, ChatRequest, Token,UserCreate, GetFlightsRequest
 
 SECRET_KEY = settings.JWT_SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
-
-class ChatRequest(BaseModel):
-    message: str
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
 
 app = FastAPI(
     title="TravelHues AI Agent API",
@@ -102,26 +89,101 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @app.post("/plan-trip", status_code=status.HTTP_201_CREATED, tags=["Planning"])
 async def plan_trip(
     request: PlanTripRequest,
     current_user_id: str = Depends(get_current_user_id)
 ):
+    dates_to_save = {}
+    response_payload = {} 
+
+    if request.is_flexible:
+        suggested_dates = run_flexible_date_agent(
+            request.destination,
+            request.dates.month,
+            request.dates.days
+        )
+        dates_to_save = {
+            "start_date": suggested_dates["start_date"],
+            "end_date": suggested_dates["end_date"]
+        }
+        response_payload["suggested_dates"] = suggested_dates
+    else:
+        dates_to_save = request.dates.model_dump()
     analysis = run_root_agent(request.destination)
+    
     initial_data = {
         "origin": request.origin,
         "destination": request.destination,
-        "dates": request.dates.model_dump(),
+        "dates": dates_to_save,  
         "is_flexible": request.is_flexible,
+        "include_flights": request.include_flights,
         "analysis": analysis
     }
+    
     session = create_session(user_id=current_user_id, initial_data=initial_data)
+    response_payload["session_id"] = session["session_id"]
+    response_payload["status"] = "success"
+    response_payload["analysis"] = analysis
+    
+    return response_payload
+
+@app.post("/get-flights", tags=["Flights"])
+async def get_flights(
+    request: GetFlightsRequest,
+    current_user_id: str = Depends(get_current_user_id)
+):
+    session_id = request.session_id
+
+    session = get_session(session_id)
+    if not session or session.get("user_uid") != current_user_id:
+        raise HTTPException(status_code=404, detail="Session not found or access denied")
+    
+    origin = session.get("origin")
+    destination = session.get("destination")
+    start_date = session.get("dates", {}).get("start_date")
+    end_date = session.get("dates", {}).get("end_date")
+
+    if not all([origin, destination, start_date, end_date]):
+        raise HTTPException(status_code=400, detail="Missing trip details in session to search for flights.")
+    flight_data = run_flight_search_agent(origin, destination, start_date, end_date)
+    update_session(session_id, {"flight_options": flight_data})
     
     return {
-        "session_id": session["session_id"],
-        "status": "success",
-        "analysis": analysis
+        "session_id": session_id,
+        "status": "flights_found",
+        "flights": flight_data
     }
+
+@app.post("/confirm-flights", tags=["Flights"])
+async def confirm_flights(
+    request: ConfirmFlightsRequest,
+    current_user_id: str = Depends(get_current_user_id)
+):
+    session = get_session(request.session_id)
+    if not session or session.get("user_uid") != current_user_id:
+        raise HTTPException(status_code=404, detail="Session not found or access denied")
+    
+    flight_options = session.get("flight_options", {})
+    
+    all_onward_flights = flight_options.get("onward_flights", {}).get("best", []) + flight_options.get("onward_flights", {}).get("budget", [])
+    all_return_flights = flight_options.get("return_flights", {}).get("best", []) + flight_options.get("return_flights", {}).get("budget", [])
+    
+    onward_flight = next((f for f in all_onward_flights if f["flight_id"] == request.onward_flight), None)
+    return_flight = next((f for f in all_return_flights if f["flight_id"] == request.return_flight), None)
+
+    if not onward_flight or not return_flight:
+        raise HTTPException(status_code=404, detail="One or more flight IDs were not found in the session's flight options.")
+    update_session(request.session_id, {
+        "confirmed_flights": {
+            "onward": onward_flight,
+            "return": return_flight
+        },
+        "status": "flights_confirmed"
+    })
+    
+    return {"session_id": request.session_id, "status": "success", "message": "Flights confirmed"}
 
 @app.post("/generate-summary", tags=["Planning"])
 async def generate_summary(
