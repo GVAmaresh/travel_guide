@@ -153,15 +153,29 @@ First, create an account and get your login token.
 
 ### 2\. Get Token
 
-  * **Endpoint:** `POST /token`
-  * **Body (x-www-form-urlencoded):**
-      * `username`: `testuser`
-      * `password`: `testpass`
-  * **Action (in "Tests" tab):** Add this script to automatically save your token.
-    ```javascript
-    pm.collectionVariables.set("JWT", pm.response.json().access_token);
-    ```
-  * **Result:** An access token is saved to your `{{JWT}}` variable.
+* **Endpoint:** `POST /token`
+
+* **Body (x-www-form-urlencoded):**
+  *(In Postman, under **Body**, choose **raw** and select **Text**, not JSON. Then paste the following query:)*
+
+  ```
+  username=testuser&password=testpass
+  ```
+
+* **Action (in the "Tests" tab):**
+  Add the following script to automatically save your token:
+
+  ```javascript
+  pm.collectionVariables.set("JWT", pm.response.json().access_token);
+  ```
+
+* **Result:**
+  An access token will be saved to your `{{JWT}}` variable.
+
+---
+
+Would you like me to also make it **step-by-step instructions** (like Step 1, Step 2, Step 3) so it’s even clearer for README users?
+
 
 -----
 
