@@ -185,6 +185,7 @@ async def confirm_flights(
     
     return {"session_id": request.session_id, "status": "success", "message": "Flights confirmed"}
 
+
 @app.post("/generate-summary", tags=["Planning"])
 async def generate_summary(
     request: GenerateSummaryRequest,
@@ -194,12 +195,16 @@ async def generate_summary(
     if not session or session.get("user_uid") != current_user_id:
         raise HTTPException(status_code=404, detail="Session not found or access denied")
 
+    data_for_summary_agent = session.copy()
+    
+    data_for_summary_agent.pop("flight_options", None)
+    data_for_summary_agent.pop("confirmed_flights", None)
+    
     summary_text = run_summary_agent(
-        session_data=session, 
+        session_data=data_for_summary_agent, 
         preferences=request.preferences.model_dump(), 
         details=request.additional_details
     )
-    
     update_data = {
         "preferences": request.preferences.model_dump(),
         "additional_details": request.additional_details,
