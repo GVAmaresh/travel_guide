@@ -34,8 +34,8 @@ Follow these steps to set up and run the project on your local machine.
 #### 1. Clone the Repository
 
 ```bash
-git clone <your-repository-url>
-cd travel_agent_system
+git clone https://github.com/GVAmaresh/travel_guide
+cd travel_guide
 ```
 
 #### 2. Set Up the Python Environment
@@ -218,7 +218,7 @@ Of course. Here is the updated section for your Postman guide, reflecting the ch
     ```
   * **Result:** A list of "best" and "budget" flight options.
   * **Action:** From the response, **manually copy** the `flight_id` for your chosen onward and return flights for the next step.
-  
+
 #### Step 5: Confirm Your Flights
 
   * **Endpoint:** `POST /confirm-flights`
